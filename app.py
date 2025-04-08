@@ -32,7 +32,7 @@ def send_telegram_message(chat_id, text):
 
 def get_gemini_reply(user_msg):
     try:
-        model = genai.GenerativeModel("gemini-pro")
+        model = genai.GenerativeModel(model_name="models/gemini-pro")
         response = model.generate_content(user_msg)
         return response.text
     except Exception as e:
