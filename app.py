@@ -19,7 +19,7 @@ if not GEMINI_API_KEY:
 
 print("✅ DEBUG: Gemini-Key geladen:", GEMINI_API_KEY[:6] + "..." if GEMINI_API_KEY else "FEHLT")
 
-# ✅ Konfiguration OHNE api_endpoint (ab v0.7+ unnötig)
+# Gemini konfigurieren – OHNE api_endpoint (ab 0.7.x unnötig)
 genai.configure(
     api_key=GEMINI_API_KEY,
     transport="rest"
@@ -37,7 +37,7 @@ def get_gemini_reply(user_msg):
     try:
         model = genai.GenerativeModel(model_name="models/gemini-pro")
         response = model.generate_content(
-            [user_msg],
+            user_msg,  # ✅ KEINE Liste! Damit Gemini v1 API genutzt wird
             generation_config={
                 "temperature": 0.7,
                 "top_p": 1,
@@ -69,5 +69,3 @@ def webhook():
 
 if __name__ == '__main__':
     app.run()
-
-
