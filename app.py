@@ -13,13 +13,17 @@ app = Flask(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Gemini-Key prüfen und konfigurieren
+# Gemini-Key prüfen und konfigurieren (API-Version explizit auf v1 setzen)
 if not GEMINI_API_KEY:
     raise ValueError("❌ Der GEMINI_API_KEY wurde nicht gefunden. Bitte als Environment Variable in Render setzen.")
 
 print("✅ DEBUG: Gemini-Key geladen:", GEMINI_API_KEY[:6] + "..." if GEMINI_API_KEY else "FEHLT")
 
-genai.configure(api_key=GEMINI_API_KEY)
+genai.configure(
+    api_key=GEMINI_API_KEY,
+    transport="rest",
+    api_endpoint="https://generativelanguage.googleapis.com/v1"
+)
 
 def send_telegram_message(chat_id, text):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
