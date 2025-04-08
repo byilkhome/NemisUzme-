@@ -1,25 +1,34 @@
 from flask import Flask, request
 import requests
-import openai
 import os
 from dotenv import load_dotenv
+import google.generativeai as genai
 
+# .env laden
 load_dotenv()
 
 app = Flask(__name__)
 
+# API-Keys
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = OPENAI_API_KEY
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Gemini konfigurieren
+genai.configure(api_key=GEMINI_API_KEY)
 
 def send_telegram_message(chat_id, text):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text}
     requests.post(url, json=payload)
 
+def get_gemini_reply(user_msg):
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(user_msg)
+    return response.text
+
 @app.route('/')
 def home():
-    return "NemisUz ist online!"
+    return "NemisUz (Gemini) ist online!"
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -29,14 +38,7 @@ def webhook():
         user_msg = data["message"].get("text", "")
 
         if user_msg:
-            reply = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "Du bist NemisUz, ein zweisprachiger Usbekisch-Deutsch Lernassistent."},
-                    {"role": "user", "content": user_msg}
-                ]
-            )
-            bot_reply = reply.choices[0].message.content
+            bot_reply = get_gemini_reply(user_msg)
             send_telegram_message(chat_id, bot_reply)
 
     return "ok", 200
