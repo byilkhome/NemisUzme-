@@ -13,10 +13,13 @@ app = Flask(__name__)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Gemini konfigurieren – mit Key-Prüfung
+# Gemini-Key prüfen und debuggen
 if not GEMINI_API_KEY:
     raise ValueError("❌ Der GEMINI_API_KEY wurde nicht gefunden. Bitte als Environment Variable in Render setzen.")
 
+print("✅ DEBUG: Gemini-Key geladen:", GEMINI_API_KEY[:6] + "..." if GEMINI_API_KEY else "FEHLT")
+
+# Gemini konfigurieren
 genai.configure(api_key=GEMINI_API_KEY)
 
 def send_telegram_message(chat_id, text):
@@ -55,3 +58,5 @@ def webhook():
 
 if __name__ == '__main__':
     app.run()
+
+
