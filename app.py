@@ -15,19 +15,26 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Gemini konfigurieren – mit Key-Prüfung
 if not GEMINI_API_KEY:
-    raise ValueError("❌ Der GEMINI_API_KEY wurde nicht gefunden. Bitte als Environment Variable setzen.")
+    raise ValueError("❌ Der GEMINI_API_KEY wurde nicht gefunden. Bitte als Environment Variable in Render setzen.")
 
 genai.configure(api_key=GEMINI_API_KEY)
 
 def send_telegram_message(chat_id, text):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text}
-    requests.post(url, json=payload)
+    try:
+        requests.post(url, json=payload)
+    except Exception as e:
+        print(f"❗ Fehler beim Senden an Telegram: {e}")
 
 def get_gemini_reply(user_msg):
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(user_msg)
-    return response.text
+    try:
+        model = genai.GenerativeModel("gemini-pro")
+        response = model.generate_content(user_msg)
+        return response.text
+    except Exception as e:
+        print(f"❗ Fehler bei Gemini-Antwort: {e}")
+        return "⚠️ Entschuldigung, es gab ein Problem bei der Antwortgenerierung."
 
 @app.route('/')
 def home():
@@ -41,10 +48,7 @@ def webhook():
         user_msg = data["message"].get("text", "")
 
         if user_msg:
-            try:
-                bot_reply = get_gemini_reply(user_msg)
-            except Exception as e:
-                bot_reply = f"⚠️ Fehler bei der Gemini-Antwort: {str(e)}"
+            bot_reply = get_gemini_reply(user_msg)
             send_telegram_message(chat_id, bot_reply)
 
     return "ok", 200
